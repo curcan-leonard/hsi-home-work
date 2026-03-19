@@ -11,9 +11,7 @@ char *delete_first(char *s, char *pattern)
 	/**
 	 * TODO: Implement this function
 	 */
-
-	(void) s;
-	(void) pattern;
-
-	return NULL;
+	char *str = strstr(s, pattern);
+	printf("%s", str);
+	return s;
 }
