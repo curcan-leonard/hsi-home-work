@@ -7,10 +7,22 @@
 int vector_max(int *v, int len)
 {
 	int max;
-	unsigned int i;
+	unsigned int i = 0;
+	i = 0;
+	max = v[0];
 
-	/**
-	 * TODO: Implement finding the maximum value in the vector
-	 */
-	return -1;
+loop:
+
+	if (v[i] <= max)
+		goto smaller;
+
+	max = v[i];
+
+smaller:
+	i++;
+
+	if (i < len)
+		goto loop;
+
+	return max;
 }
