@@ -1,4 +1,4 @@
-; SPDX-License-Identifier: BSD-3-Clause
+; SPDX-License-
 
 %include "printf64.asm"
 
@@ -21,15 +21,38 @@ main:
     push rbp
     mov rbp, rsp
 
-    ; Multiplication for db
+    ; db
     mov al, byte [num1]
     mov bl, byte [num2]
     mul bl
 
     ; Print result in hexa
+
     PRINTF64 `Result is: 0x%hx\n\x0`, rax
 
-    ; TODO: Implement multiplication for dw, dd and dq data types.
+
+    ; for dw
+    mov ax, word [num1_w]
+    mov bx, word [num2_w]
+    mul bx
+
+    PRINTF64 `Result is: 0x%hx%04hx\n\x0`, rdx, rax
+
+
+    ; for dd
+    mov eax, dword [num1_d]
+    mov ebx, dword [num2_d]
+    mul ebx
+
+    PRINTF64 `Result is: 0x%x%08x\n\x0`, rdx, rax
+
+    ; for dq
+    mov rax, qword [num1_q]
+    mov rbx, qword [num2_q]
+    mul rbx
+
+    PRINTF64 `Result is: 0x%lx%016lx\n\x0`, rdx, rax
 
     leave
     ret
+
