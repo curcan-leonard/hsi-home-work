@@ -22,3 +22,7 @@ main:
 
     leave
     ret
+    
+start:
+    add rax, 1
+    mov r8
