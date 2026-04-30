@@ -6,11 +6,24 @@ to_upper:
     push rbp
     mov rbp, rsp
 
-    ; TODO: save the used registers and align the stack, if needed
+    sub rsp, 8              
+    push rbx                
 
-    ; TODO: convert the string to uppercase
+    mov rax, rdi
+check_one_byte:
+    mov bl, [rax]
+    test bl, bl
+    je out
+    
+    xor bl, 32
+    mov [rax], bl
+    
+    inc rax
+    jmp check_one_byte
 
-    ; TODO: restore the used registers and the stack pointer, if altered
+out:
+    pop rbx
+    add rsp, 8
 
     leave
     ret
