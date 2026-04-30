@@ -6,14 +6,22 @@
 
 void rotate_left(unsigned int *number, int bits)
 {
-	/* TODO */
-	(void) number;
-	(void) bits;
+	unsigned int bits_mask = -1;
+
+	bits_mask <<= (sizeof(*number) * 8 - bits);
+	bits_mask &= (*number);
+	bits_mask >>= (sizeof(*number) * 8 - bits);
+	(*number) <<= bits;
+	(*number) |= bits_mask;
 }
 
 void rotate_right(unsigned int *number, int bits)
 {
-	/* TODO */
-	(void) number;
-	(void) bits;
+	unsigned int bits_mask = -1;
+
+	bits_mask >>= (sizeof(*number) * 8 - bits);
+	bits_mask &= (*number);
+	bits_mask <<= (sizeof(*number) * 8 - bits);
+	(*number) >>= bits;
+	(*number) |= bits_mask;
 }
