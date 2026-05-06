@@ -12,15 +12,17 @@ main:
     push rbp
     mov rbp, rsp
 
-    mov rcx, [num]     ; Use rcx as counter for computing the sum.
-    xor rax, rax       ; Use rax to store the sum. Start from 0.
+    mov rcx, [num]     ; Use rcx as counter.
+    xor rbx, rbx       ; Use rbx to store the sum of squares. Start from 0.
 
-add_to_sum:
-    add rax, rcx
-    loop add_to_sum    ; Decrement rcx. If not zero, add it to sum.
+add_square_to_sum:
+    mov rax, rcx       ; Move current number to rax for multiplication
+    mul rax            ; Square the number (rax = rax * rax)
+    add rbx, rax       ; Add the square to our sum
+    loop add_square_to_sum    ; Decrement rcx. If not zero, continue.
 
     mov rcx, [num]
-    PRINTF64 `Sum(%lu): %lu\n\x0`, rcx, rax
+    PRINTF64 `Sum of squares(%lu): %lu\n\x0`, rcx, rbx
 
     leave
     ret
