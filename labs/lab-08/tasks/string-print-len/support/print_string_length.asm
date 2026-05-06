@@ -10,11 +10,17 @@ print_string_length:
     push rbp
     mov rbp, rsp
 
-    ; TODO: save the used registers and align the stack, if needed
+    sub rsp, 8              ; align the stack
+    push rcx                ; save the string length
 
-    ; TODO: print the string length
+    mov rcx, rdi            ; get the string length from the stack
 
-    ; TODO: restore the used registers and the stack pointer, if altered
+    mov rdi, print_format
+    mov rsi, rcx
+    call printf
+
+    pop rcx                 ; restore the string length
+    add rsp, 8              ; restore the stack pointer
 
     leave
     ret

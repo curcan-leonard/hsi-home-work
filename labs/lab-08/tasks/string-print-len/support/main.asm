@@ -1,7 +1,7 @@
 %include "../utils/printf64.asm"
 
 section .data
-    mystring db "This is my string", 0
+    mystring db "This 00is my string", 0
 
 section .text
 
