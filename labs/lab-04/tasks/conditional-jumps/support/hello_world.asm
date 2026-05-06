@@ -4,8 +4,8 @@
 
 section .data
     myString: db "Hello, World!", 0
-    goodbyeString: db "Goodbye, World!", 0
-    N: dq 99                         ; N = 6
+    N: dq 6                         ; N = 6
+    myGoodbyeString: db "Goodbye, World!", 0
 
 section .text
     global main
@@ -15,7 +15,7 @@ main:
     push rbp
     mov rbp, rsp
 
-    mov rcx, QWORD [N]              ; rcx will store the value of N
+    mov rcx, QWORD [N]              ; N = the value stored in rcx
     PRINTF64 `%d\n\x0`, rcx         ; DO NOT REMOVE/MODIFY THIS LINE
 
     mov rax, 2
@@ -28,15 +28,14 @@ main:
     ret
 
 print:
+    PRINTF64 `%s\n\x0`, myString
                                     ; TODO2.2: print "Hello, World!" N times
+    dec rcx
+    cmp rcx, 0
+    jg print
                                     ; TODO2.1: print "Goodbye, World!"
+    PRINTF64 `%s\n\x0`, myGoodbyeString
     xor rax, rax
 
-start:
-    PRINTF64 `%s\n\x0`, myString 
-    add rax, 1
-    cmp rax, rcx 
-    jl start
-    PRINTF64 `%s\n\x0`, goodbyeString
     leave
     ret
