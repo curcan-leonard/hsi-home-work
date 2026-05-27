@@ -1,0 +1,73 @@
+name: OpenEduHub - Github Page
+
+on:
+  push:
+    branches:
+      - main
+      - x86
+
+jobs:
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the current branch to a `main` directory
+        uses: actions/checkout@v4
+        with:
+          path: main
+
+      - name: Checkout `x86` branch
+        uses: actions/checkout@v4
+        with:
+          ref: x86
+          path: x86
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and load Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./main
+          file: ./main/Dockerfile
+          push: false
+          load: true
+          tags: jekyll-image:latest
+          cache-from: type=gha
+          cache-to: type=gha
+
+      - name: Build Jekyll site for x86_64
+        run: |
+          echo "url: https://${{ github.repository_owner }}.github.io" >> _config.yaml
+          echo "baseurl: /hardware-software-interface" >> _config.yaml
+
+          # Build Jekyll site for x86
+          docker run --rm \
+            -v $(pwd):/base/app \
+            -u $(id -u):$(id -g) \
+            jekyll-image bundle exec jekyll build -s /base/app -d /base/app/_site
+        working-directory: main
+
+      - name: Build Jekyll site for x86
+        run: |
+          echo "url: https://${{ github.repository_owner }}.github.io" >> _config.yaml
+          echo "baseurl: /hardware-software-interface/x86" >> _config.yaml
+
+          # Build Jekyll site for x86
+          # Note: The x86 site is built in a separate directory.
+          docker run --rm \
+            -v $(pwd):/base/app \
+            -u $(id -u):$(id -g) \
+            jekyll-image bundle exec jekyll build -s /base/app -d /base/app/_site
+
+          # Move the x86 site under the main site directory
+          mv _site ${{ github.workspace }}/main/_site/x86
+        working-directory: x86
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: main/_site
+          publish_branch: gh-pages
+          enable_jekyll: true

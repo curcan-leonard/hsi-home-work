@@ -1,0 +1,79 @@
+name: OpenEduHub - PR Deployment
+
+on:
+  workflow_dispatch:
+  pull_request_target:
+    types: [labeled]
+
+jobs:
+  deploy:
+    if: ${{ github.event.label.name == 'needs-rendering' || github.event_name == 'workflow_dispatch' }}
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Set Deployment ID
+        run: |
+          # Use PR number for PR trigger and commit SHA for manual trigger
+          if [[ -z "${{ github.event.pull_request.number }}" ]]; then
+            echo "DEPLOYMENT_ID=trigger-${GITHUB_SHA::7}" >> $GITHUB_ENV
+          else
+            echo "DEPLOYMENT_ID=${{ github.event.pull_request.number }}" >> $GITHUB_ENV
+          fi
+          echo "DEPLOYMENT_ID=${{ env.DEPLOYMENT_ID }}"
+
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and load Docker image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: jekyll-image:latest
+          cache-from: type=gha
+          cache-to: type=gha
+
+      - name: Build Jekyll site
+        run: |
+          # GitHub-specific config
+          echo "url: https://${{ github.repository_owner }}.github.io" >> _config.yaml
+          echo "baseurl: /hardware-software-interface/${{ env.DEPLOYMENT_ID }}" >> _config.yaml
+
+          # Build Jekyll site
+          docker run --rm \
+            -v $(pwd):/base/app \
+            -u $(id -u):$(id -g) \
+            jekyll-image bundle exec jekyll build -s /base/app -d /base/app/_site
+
+      # The PR site is deployed as a subdirectory of the main site.
+      # This means that it will be overwritten when the main site is redeployed.
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: _site
+          destination_dir: ${{ env.DEPLOYMENT_ID }}
+          publish_branch: gh-pages
+          enable_jekyll: true
+
+      - name: Add Comment to PR
+        if: ${{ !startsWith(env.DEPLOYMENT_ID, 'trigger-') }}
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            Published at https://${{ github.repository_owner }}.github.io/hardware-software-interface/${{ env.DEPLOYMENT_ID }}/
+
+      - name: Output Deployment URL
+        if: ${{ startsWith(env.DEPLOYMENT_ID, 'trigger-') }}
+        run: |
+          echo "The deployment is available at https://${{ github.repository_owner }}.github.io/hardware-software-interface/${{ env.DEPLOYMENT_ID }}/"
