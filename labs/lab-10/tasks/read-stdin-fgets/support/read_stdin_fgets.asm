@@ -4,13 +4,11 @@
 ; Fill buffer with data from standard input.
 ; Buffer is stored on the stack.
 
-; TODO 1: Add missing external declaration for stdin
-; TODO 1: Change gets to fgets function.
 extern printf
 extern puts
 extern strlen
-extern gets
-
+extern fgets
+extern stdin
 
 section .data
     read_message: db "insert buffer string: ", 0
@@ -43,14 +41,18 @@ main:
     call printf
     add esp, 4
 
-    lea ebx, [ebp - 68]
-
-    ; TODO 2: Call fgets function instead of gets.
-    ; HINT: fgets takes 3 arguments: buffer address, buffer size, and stdin.
-    ; IMPORTANT: remember the order of arguments that have to be pushed.
+    ; The buffer has only 64 bytes of memory allocated
+    ; The last one is for null terminator
+    ; So, with 64 + 1 + 4 = 69
+    ; There can still be a full overflow of local var
+    ; I suggest observing the code with 68 instead
+    ; as well.
+    lea ebx, [ebp-68]
+    push dword [stdin]
+    push 69
     push ebx
-    call gets
-    add esp, 4
+    call fgets
+    add esp, 12
 
     ; Push string length on the stack.
     ; String length is stored at ebp - 72.
@@ -69,7 +71,7 @@ print_byte:
     xor eax, eax
     lea ebx, [ebp - 68]
     mov al, byte[ebx + ecx]
-    push ecx	; save ecx, printf may modify it
+    push ecx	; save ecx
 
     ; Print current byte.
     push eax

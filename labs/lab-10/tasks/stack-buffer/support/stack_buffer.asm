@@ -46,7 +46,8 @@ fill_byte:
     cmp ecx, 64
     jl fill_byte
 
-    ; TODO 3: Print "DEADBEEF" instead of "CAFEBABE"
+    ; solution TODO 3
+    mov dword [ebx + ecx], 0xDEADBEEF
 
     ; Text before printing buffer.
     push buffer_intro_message
@@ -68,11 +69,7 @@ print_byte:
 
     pop ecx	; restore ecx
     inc ecx
-
-    ; TODO 1: Print the next bytes 4
-    ; TODO 2: After printing the local variable,
-    ; print the next 8 bytes (What contain the next 8 bytes?)
-    cmp ecx, 64
+    cmp ecx, 76 ; solution TODO 1 and TODO 2
     jl print_byte
 
     ; Print new line. C equivalent instruction is puts("").
